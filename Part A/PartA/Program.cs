@@ -9,6 +9,32 @@ When a new point is inserted, it is compared against the corresponding coordinat
 to decide which one of 2d branches it should descend. For example, when a 2-dimensional point (x, y) is
 compared against the current point (u, v) then it can descend one of four branches corresponding to one
 of four possible cases.
+ */
+
+/* 
+I asked chatGPT for help understanding the question and it gave me this example. I have only added a 
+few comments and some more test cases.
+
+Prompt used: 
+
+"I don't know what this is really asking can you help me understand? A point in d-dimensional space is defined as an d-tuple (x1, x2, ..., xd) where xi represents the i
+th coordinate
+of the point. For example, a point in 2-dimensional space is defined as (x1, x2) and often rewritten more
+familiarly as (x, y).
+Suppose that d-dimensional points are stored in a variation of the quadtree called the point quadtree.
+When a new point is inserted, it is compared against the corresponding coordinates of the current point
+to decide which one of 2d branches it should descend. For example, when a 2-dimensional point (x, y) is
+compared against the current point (u, v) then it can descend one of four branches corresponding to one
+of four possible cases.
+x < u and y < v x < u and y > v x > u and y < v x > u and y > v
+Note that the number of cases (branches) increases exponentially as d increases.
+If branches are implemented as an array B[0..2
+d − 1] of nodes, write (12 marks) and test (3 marks) a short
+program that compares two d-dimensional points and maps the result to an index of B.
+Hints:
+1. Represent a point as an array of coordinates.
+2. Think ”binary” when calculating the index.
+3. Only one FOR loop and one IF statement is required."
 
  */
 class Program {
