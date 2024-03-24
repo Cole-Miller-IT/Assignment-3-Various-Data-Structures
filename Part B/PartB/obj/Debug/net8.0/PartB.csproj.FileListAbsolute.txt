@@ -1,0 +1,15 @@
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.AssemblyInfoInputs.cache
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.AssemblyInfo.cs
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.csproj.CoreCompileInputs.cache
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.sourcelink.json
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\bin\Debug\net8.0\PartB.exe
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\bin\Debug\net8.0\PartB.deps.json
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\bin\Debug\net8.0\PartB.runtimeconfig.json
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\bin\Debug\net8.0\PartB.dll
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\bin\Debug\net8.0\PartB.pdb
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.dll
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\refint\PartB.dll
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.pdb
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\PartB.genruntimeconfig.cache
+C:\Users\cdm12\OneDrive\Desktop\Files to Backup\Trent Winter 2024\3020 Data Structs 2\Assignment 3\Assignment-3-Various-Data-Structures\Part B\PartB\obj\Debug\net8.0\ref\PartB.dll
