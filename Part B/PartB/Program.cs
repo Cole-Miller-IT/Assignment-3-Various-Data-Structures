@@ -101,7 +101,7 @@ namespace BinomialHeap {
             else {
                 if (highest.LeftMostChild == null) {
                     //Case 1: highest is a single node (Bk = 0)
-                    Console.WriteLine("\nsingle node to remove");
+                    //Console.WriteLine("\nsingle node to remove");
                 } else {
                     //Case 2: highest node has 1 or more connected nodes (Bk >= 1)
                     //Split higest nodes children into smaller trees, then add them to the array B
@@ -117,8 +117,8 @@ namespace BinomialHeap {
                             current.RightSibling = null;
                             nodeAdd(current);
 
-                            Console.WriteLine("Split and added new tree: ");
-                            PrintTree(current);
+                            //Console.WriteLine("Split and added new tree: ");
+                            //PrintTree(current);
 
                             //Proceed to the next portion of the tree
                             current = nextCurrent;
@@ -131,13 +131,13 @@ namespace BinomialHeap {
                 }
 
                 //Remove the node
-                Console.WriteLine("\nRemoved node: ");
-                Console.WriteLine(highest.Item);
+                //Console.WriteLine("\nRemoved node: ");
+                //Console.WriteLine(highest.Item);
                 void removeNode (BinomialNode<T> highest) {
                     for (int k = 0; k < B.Length; k++) {
                         if (B[k] == highest) {
                             //Found the node to remove
-                            Console.WriteLine("Found node");
+                            //Console.WriteLine("Found node");
                             B[k] = null;
                             size--;
                         }
@@ -146,16 +146,17 @@ namespace BinomialHeap {
 
 
                 removeNode(highest);
+                highest = null;
             }
 
-            Console.WriteLine("Binomial heap (B) after remove: ");
-            Print();
+            //Console.WriteLine("Binomial heap (B) after remove: ");
+            //Print();
 
             //Combine all remaining nodes into a compact binomial heap
             Coalesce();
 
-            Console.WriteLine("Binomial heap (B) after coalesce: ");
-            Print();
+            //Console.WriteLine("Binomial heap (B) after coalesce: ");
+            //Print();
         }
 
         //Print the binomial heap
@@ -197,11 +198,89 @@ namespace BinomialHeap {
         //Bk=0,     Bk=1,       Bk=2,       etc..
         //1 node,   2 nodes,    4 nodes,    etc..
         private void Coalesce() {
+            BinomialNode<T>[] newB = new BinomialNode<T>[B.Length]; //Make a new array to hold the binomial trees (could use the same array but I'm lazy)
+            int newSize = 0;
+            int baseNum = 2;
+            int exponent = 0;
+            int kDegree = -1;
+            bool combining = true;
+
+            //Loop through all of the binomial trees currently in B
             for (int k = 0; k < B.Length; k++) {
-                if (B[k] != null) { 
-                    
+                //if the array contains a node at B[k]
+                if (B[k] != null) {
+                    //Update newSize
+                    exponent = B[k].Degree;
+                    newSize += (int)Math.Pow(baseNum, exponent); //2^(Degree of the tree being added)    i.e. k = 0, 2^0 = 1.     k = 2, 2^2 = 4
+
+                    //Console.WriteLine("-------------------------------------------------");
+                    //Console.WriteLine("\nLooking at B[" + k + "], contains: ");
+                    //Console.WriteLine(B[k].Item);
+
+                    // If the heap (B) is empty or the new item is of higher priority than the current highest
+                    if (highest == null || B[k].Item.CompareTo(highest.Item) > 0) {
+                        highest = B[k];
+                    }
+
+                    //May need to combine the nodes 0, 1, 2,..., x amount of times
+                    //Loop until the node is inserted
+                    kDegree = B[k].Degree;
+                    BinomialNode<T> nodeToInsert = B[k];
+                    combining = true;
+                    while (combining) {
+                        //Case 1: space is empty
+                        if (newB[kDegree] == null) {
+                            //Insert node
+                            //Console.WriteLine("\nEmpty space available inserting into B[" + kDegree + "]");
+                            newB[kDegree] = nodeToInsert;
+                            combining = false;
+
+                        } else { //Case 2: space is occupied 
+                            BinomialNode<T> combineTrees(BinomialNode<T> TreeOne, BinomialNode<T> TreeTwo) {
+                                //Console.WriteLine("\nTree One: ");
+                                //PrintTree(TreeOne);
+                                //Console.WriteLine("\nTree Two: ");
+                                //PrintTree(TreeTwo);
+
+                                //Determine which node has the higher priority. Ordered on high and assumes there aren't duplicate priorities.
+                                int result = TreeOne.Item.CompareTo(TreeTwo.Item);
+                                if (result > 0) {
+                                    //TreeOne higher priority
+                                    //Console.WriteLine("\nTree one higher priority");
+                                    TreeTwo.RightSibling = TreeOne.LeftMostChild; //Do this first
+                                    TreeOne.LeftMostChild = TreeTwo;
+                                    TreeOne.Degree += 1;
+
+                                    return TreeOne;
+
+                                } else {
+                                    //TreeTwo higher priority
+                                    //Console.WriteLine("\nTree two higher priority");
+                                    TreeOne.RightSibling = TreeTwo.LeftMostChild; //Do this first
+                                    TreeTwo.LeftMostChild = TreeOne;
+                                    TreeTwo.Degree += 1;
+
+                                    return TreeTwo;
+                                }
+                            }
+
+                            //Combine our current tree and the tree that is in the space we are looking at in newB
+                            nodeToInsert = combineTrees(nodeToInsert, newB[kDegree]);
+                            //Console.WriteLine("New combined tree: ");
+                            //PrintTree(nodeToInsert);
+
+                            //Remove node in newB that just got combined
+                            newB[kDegree] = null;
+
+                            //Update the degree and look at the next spot
+                            kDegree = nodeToInsert.Degree;
+                        } 
+                    }
                 }
             }
+            //Update size and update B to have the new Binomial heap
+            B = newB;
+            size = newSize;
         }
 
         //Increases the array size by 1 and adds an item to it
@@ -210,27 +289,23 @@ namespace BinomialHeap {
             B[B.Length - 1] = node; // Adding the new item at the end
         }
 
-        /// <summary>
-        /// ////////////////////////////////////////////////////////////
-        /// </summary>
-
 
         public void MakeEmpty() {
             Console.WriteLine("Not implemented");
         }
 
+
         // Empty
         // Returns true is the binomial heap is empty; false otherwise
         // Time complexity:  O(1)
-
         public bool Empty() {
             return size == 0;
         }
 
+
         // Size
         // Returns the number of items in the binomial heap
         // Time complexity:  O(1)
-
         public int Size() {
             return size;
         }
@@ -240,7 +315,6 @@ namespace BinomialHeap {
 
     // Used by class BinomailHeap<T>
     // Implements IComparable and overrides ToString (from Object)
-
     public class PriorityClass : IComparable {
         private int priorityValue;
         private char letter;
@@ -263,7 +337,6 @@ namespace BinomialHeap {
     //--------------------------------------------------------------------------------------
 
     // Test for above classes
-
     public class Test {
         public static void Main(string[] args) {
             BinomialHeap<PriorityClass> BH = new BinomialHeap<PriorityClass>();
@@ -273,15 +346,29 @@ namespace BinomialHeap {
             BH.Add(new PriorityClass(53, (char)('c')));
             BH.Add(new PriorityClass(54, (char)('d')));
             BH.Add(new PriorityClass(55, (char)('e')));
-            BH.Add(new PriorityClass(51, (char)('b')));
+            BH.Add(new PriorityClass(1, (char)('f')));
+            BH.Add(new PriorityClass(2, (char)('g')));
 
             BH.Print();
 
+            //Console.WriteLine("Front (highest priority): " + BH.Front());
+
+            Console.WriteLine("\n-------------------------------");
+            BH.Remove();
             Console.WriteLine("Front (highest priority): " + BH.Front());
+            BH.Print();
 
             BH.Remove();
-            //BH.Remove();
-            //BH.Remove();
+            Console.WriteLine("Front (highest priority): " + BH.Front());
+            BH.Print();
+
+
+            BH.Add(new PriorityClass(70, (char)('h')));
+            BH.Add(new PriorityClass(15, (char)('i')));
+            BH.Print();
+            BH.Remove();
+            BH.Print();
+
             //BH.Remove();
             //BH.Remove();
             //BH.Remove();
