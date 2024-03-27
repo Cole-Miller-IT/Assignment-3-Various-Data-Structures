@@ -372,24 +372,6 @@ namespace BinomialHeap {
             //BH.Remove();
             //BH.Remove();
             //BH.Remove();
-
-            //Console.ReadLine();
-            /*for (i = 0; i < 20; i++) {
-                BH.Add(new PriorityClass(r.Next(50), (char)('a')));
-            }
-
-            Console.WriteLine(BH.Size());
-            BH.Degrees();
-
-            while (!BH.Empty()) {
-                Console.WriteLine(BH.Front().ToString());
-                BH.Remove();
-                BH.Degrees();
-                Console.ReadLine();
-            }
-            Console.ReadLine();*/
-
-
         }
     }
 }
