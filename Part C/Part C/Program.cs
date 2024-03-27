@@ -21,6 +21,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
 
         // Method to print keys in this node
         public void PrintNode() {
+            Console.Write("Keys in current node: ");
             for (int i = 0; i < NumKeys; i++) {
                 Console.Write(Keys[i] + " ");
             }
@@ -59,7 +60,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
 
                 // Move to the correct child
                 currentNode = currentNode.Children[i];
-                Console.WriteLine($"Moving to child at index {i}");
+                //Console.WriteLine($"Moving to child at index {i}");
 
                 break;
             }
@@ -69,25 +70,31 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
 
 
     //Returns true if key k is successfully inserted; false otherwise. (6 marks)
-    public void Insert(T k) {
+    public bool Insert(T k) {
+        bool result = true;
         Console.WriteLine("\n-------------------------------------------\nKey to insert: " + k);
         //First item in the tree
         if (root == null) {
             root = new Node<T>();
             root.Keys[0] = k;
             root.NumKeys = 1;
-            //return true;
         } else { //not the first item in the tree
+            if (Search(k)) {
+                //No duplicates
+                Console.WriteLine("No duplicates allowed.");
+                return false;
+            }
+
             Node<T> parentNode = null;
             Node<T> currentNode = root;
 
             //Loop until the node is inserted or a duplicate is found
             while (currentNode != null) {
-                Console.WriteLine("Currently at node: ");
-                currentNode.PrintNode();
+                //Console.WriteLine("Currently at node: ");
+                //currentNode.PrintNode();
                 //Console.ReadLine();
                 if (currentNode.NumKeys == 3) {
-                    Console.WriteLine("\nSPlit node");
+                    //Console.WriteLine("\nSPlit node");
                     //Need to split a 3 node
                     SplitNode(parentNode, currentNode);
 
@@ -102,20 +109,21 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                     currentNode = moveDown(k, currentNode);                    
                 } else {
                     if (currentNode.IsLeaf) {
-                        Console.WriteLine("insert into non full node");
+                        //Console.WriteLine("insert into non full node");
                         InsertNonFullNode(currentNode, k);
-                        return;
                     }
 
                     parentNode = currentNode;
                     // Move down the tree
-                    Console.WriteLine("move down tree");
+                    //Console.WriteLine("move down tree");
                     //currentNode = GetNextChild(currentNode, k); //
                     currentNode = moveDown(k, currentNode);
                 }
             }
         }
+        return result;
     }
+
 
     //Splits a 3 node
     private void SplitNode(Node<T> parent, Node<T> nodeToSplit) {
@@ -175,6 +183,8 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
         }
     }
 
+
+    //Insert a node into the tree at a node that is not full (doesn't already have 3 keys in it)
     private void InsertNonFullNode(Node<T> node, T item) {
         int i = node.NumKeys - 1;
         if (node.IsLeaf) {
@@ -203,16 +213,89 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
     }
 
 
-    //which returns true if key k is successfully deleted; false otherwise. (10 marks)
+    //returns true if key k is successfully deleted; false otherwise. (10 marks)
     bool Delete(T k) {
         return false;
     }
 
 
-    //which returns true if key k is found; false otherwise(4 marks).
+    //returns true if key k is found; false otherwise(4 marks).
     public bool Search(T k) {
-        return false;
+        //Console.WriteLine(root.Keys[0]);
+        bool result = SearchPrivate(k, root);
+
+        /*if (result == true) {
+            Console.WriteLine("\nFound " + k);
+        } else {
+            Console.WriteLine("\n" + k + " not found");
+        }*/
+
+        return result;
     }
+
+
+    //returns true if key k is found; false otherwise
+    private bool SearchPrivate(T k, Node<T> node) {
+        //Console.WriteLine("Looking for: " + k);
+        //Console.Write("Current node: ");
+        //node.PrintNode();
+
+        Node<T> currentNode = node;
+        bool result = false;
+        bool searching = true;
+        while (searching) {
+            ////Determine if the key is located at the current node
+            for (int i = 0; i < currentNode.NumKeys; i++) {
+                //Console.Write("\n Comparing " + k + " against " + currentNode.Keys[i]);
+                if (k.CompareTo(currentNode.Keys[i]) == 0) {
+                    //Console.WriteLine("\n" + k + " found at current node at index " + i);
+                    result = true;
+                    return result;
+                }
+                //Console.Write(". no match");
+            }
+
+            //Did not find the key at the current node
+            //Is this a leaf node
+            if (currentNode.IsLeaf) {
+                //Searched through the tree and did not find it
+                result = false;
+                break;
+            } else {
+                //Can still search more of the tree
+                //Determine which path to take
+                int index = determineIndex(k, currentNode);
+
+                //Go down the path
+                currentNode = currentNode.Children[index];
+            }
+        }
+        return result;
+    }
+
+
+    //Compares the key to the current node and determines what index it should take
+    private int determineIndex(T k, Node<T> currentNode) {
+        int index = -1;
+        //Loop through all of the keys
+        for (int i = 0; i <= currentNode.NumKeys; i++) {
+            if (i == currentNode.NumKeys) {
+                //Node goes down the right most path
+                index = currentNode.NumKeys;
+                break;
+
+            } else if (k.CompareTo(currentNode.Keys[i]) > 0) {
+                // If k is greater than the current key, check the next key (if any)
+                //Console.WriteLine(k + " greater than " + currentNode.Keys[i]);
+            } else {
+                // Found the correct path to take
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
 
     //which builds and returns the equivalent red-black tree. For this assignment, the red-black tree is represented as an instance of the class BSTforRBTree. The code for
     //BSTforRBTree is found on Blackboard under Assignments. Remember to remove the class Program
@@ -244,7 +327,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
         PrintInOrder(node.Children[node.NumKeys]);
     }
 
-    // Method to print the tree by levels
+    // Method to print the tree by levels using breadth first search
     public void PrintByLevels() {
         if (root == null) {
             Console.WriteLine("The tree is empty.");
@@ -290,7 +373,7 @@ public class Program {
 
         myBTree.PrintByLevels();
 
-        myBTree.Insert('a');
+        myBTree.Insert('a');        //Test inserting valid chars into the tree
         myBTree.PrintByLevels();
 
         myBTree.Insert('b');
@@ -299,7 +382,7 @@ public class Program {
         myBTree.Insert('c');
         myBTree.PrintByLevels();
 
-        myBTree.Insert('d');
+        myBTree.Insert('d');        //Test inserting into a full root node
         myBTree.PrintByLevels();
         myBTree.Insert('e');
         myBTree.PrintByLevels();
@@ -307,15 +390,28 @@ public class Program {
         myBTree.PrintByLevels();
         myBTree.Insert('x');
         myBTree.PrintByLevels();
-        myBTree.Insert('y');
+        myBTree.Insert('y');        //test spliting a leaf node
         myBTree.PrintByLevels();
         myBTree.Insert('z');
         myBTree.PrintByLevels();
         myBTree.Insert('f');
         myBTree.PrintByLevels();
 
+        myBTree.Insert('f');    //test duplicate value
+
         Console.WriteLine("Inorder traversal: ");
-        myBTree.Print();
+        myBTree.Print();    //test inorder traversal
+
+
+        Console.WriteLine("\nSearch: ");
+        myBTree.Search('b');    //test existing values
+        myBTree.Search('a');
+        myBTree.Search('z');
+        myBTree.Search('d');
+
+        myBTree.Search('p');    //test non-existing value
+
+        
     }
 }
 
