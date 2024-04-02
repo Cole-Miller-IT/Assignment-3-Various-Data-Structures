@@ -270,76 +270,192 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
         int keyIndex = keyAtCurrentNode(k, current);
         if (keyIndex == -1) {
             Console.WriteLine("\n" + k + " not at the current node");
-            //Descend down the tree by looking at k and determining the path to take.
-            void Descend(T k, Node<T> current) {
-                //Determine which path to take
-                int index = determineIndex(k, current);
-
-                //Go down the path
-                //currentNode = currentNode.Children[index];
-                DeletePrivate(k, current.Children[index], current);
-            }
-
 
             //Determine if the next node we will go down to has enough keys, new current must have AT LEAST t keys
+            int nextIndex = determineIndex(k, current);
+            Node<T> nextCurrent = current.Children[nextIndex];
+
             int minKeys = t;
-            if (current.NumKeys >= minKeys) {
-                Console.WriteLine("Has enough keys");
+            if (nextCurrent.NumKeys >= minKeys) {
+                Console.WriteLine("Child has enough keys");
 
                 //descend
-                Descend(k, current);
-            } else {
-                Console.WriteLine("Need more keys");
-                //Special case: At the root, root doesn't have to have t keys 
-                if (parent == null) {
-                    Console.WriteLine("at root, descending");
-                    //descend down the tree
-                    Descend(k, current);
-                    //Determine which path to take
-                    //int index = determineIndex(k, currentNode);
+                DeletePrivate(k, nextCurrent, current);
+            } 
+            else {
+                Console.WriteLine("Child needs more keys");
 
-                    //Go down the path
-                    //currentNode = currentNode.Children[index];
-                    //DeletePrivate(k, currentNode.Children[index], currentNode);
+                // borrows a key from a sibling (if possible) or 
+                if (1 == 2) {
 
-                } else {
-                    Console.WriteLine("not at root, gather more keys");
-                    // borrows a key from a sibling (if possible) or 
-                    if (1 == 2) {
+                }
+                //merges with an adjacent (node is just before or after the current node) node where the t-1 keys of each node plus one
+                //from the parent node yield a single node with 2t - 1 keys. Note: The parent node is guaranteed to have an extra key(Why?)
+                else {
+                    Console.WriteLine("current will take index " + nextIndex + " to get to next current");
+                    Node<T> mergedNode = new Node<T> ();
 
-                    }
-                    //merges with an adjacent (node is just before or after the current node) node where the t-1 keys of each node plus one
-                    //from the parent node yield a single node with 2t - 1 keys. Note: The parent node is guaranteed to have an extra key(Why?)
-                    else {
-                        //Pick a key in current. While looking at parent, ask how I got to current and get the child index (of parent that points to current).
-                        //That will tell us what path we took from the parent to get to current. Then we can use that to determine the
-                        //adjacent nodes that we could merge with
-                        int currentIndex = determineIndex(current.Keys[0], parent);
-                        Console.WriteLine("parent took index " + currentIndex + " to get to current");
-
-
-                        //CHeck left adjacent
-                        //get our current index in the parent
-                        //check index - 1   if valid
-                        if (currentIndex > 0) {
-                            Console.WriteLine("Left adjacent sibling exists");
-                            if (parent.Children[currentIndex - 1].NumKeys == (t - 1)) {
-                                Console.WriteLine("Left adjacent sibling can merge");
+                    //Merge two sibling nodes together that have t - 1 keys and a key from the current node. Then update the 2,3,4-tree references.
+                    (Node<T>, Node<T>) Merge (bool right, Node<T> sibling, Node<T> next, Node<T> current, Node<T> parent) {
+                        //Determine which key to take from current (could be 1, 2, or 3 potential keys for a 2,3,4-tree)
+                        //I don't like how unclear this is but I can't find a better way right now
+                        int currentIndex;
+                        int pathTaken = determineIndex(next.Keys[0], current);
+                        Console.WriteLine("Path/index taken to get to next from current " + pathTaken);
+                        //If we took the left most key from current
+                        if (pathTaken == 0) {
+                            currentIndex = 0;
+                        }
+                        //If we took the right most key from current
+                        else if (pathTaken == ((2 * t) -1)) {
+                            currentIndex = t;
+                        } 
+                        else {
+                            //Determine where the sibling is (it changes what key we will take from current)
+                            //Current Node:
+                            //index        0       1        2
+                            //Keys:        a       b        c
+                            //            /    |        |    \    
+                            //           (-----)        (------)
+                            //                (----------)     
+                            //Paths:     0     1         2       3
+                            //e.g. If siblingPath(0) < nextpath(1), then the sibling index will have the correct index value we want. 
+                            //     a would be in the middle, which is correct.
+                            int siblingPathTaken = determineIndex(sibling.Keys[0], current);
+                            if (siblingPathTaken < pathTaken) {
+                                //the sibling index will be the key we take
+                                currentIndex = siblingPathTaken;
+                            } 
+                            else {
+                                //else the next index will be the key we take
+                                currentIndex = pathTaken;
                             }
                         }
-                        //check index + 1   if valid
-                        //Check right adjacent
-                        if (currentIndex < ((2 * t) - 1)) {
-                            Console.WriteLine("Right adjacent sibling exists");
-                            if (parent.Children[currentIndex + 1].NumKeys == (t - 1)) {
-                                Console.WriteLine("right adjacent sibling can merge");
-                            }
+          
+
+                        Node<T> mergedNode = new Node<T>();
+                        mergedNode.NumKeys = ((2 * t) - 1);
+                        //Create new nodes
+                        if (right == true) {
+                            //Right sibling is being merged
+                            mergedNode.Keys[0] = next.Keys[0];
+                            mergedNode.Keys[1] = current.Keys[currentIndex];
+                            mergedNode.Keys[2] = sibling.Keys[0];
+
+                            mergedNode.Children[0] = next.Children[0];
+                            mergedNode.Children[1] = next.Children[1];
+                            mergedNode.Children[2] = sibling.Children[0];
+                            mergedNode.Children[3] = sibling.Children[1];
                         } 
+                        else {
+                            //Left sibling is being merged
+                            mergedNode.Keys[0] = sibling.Keys[0];
+                            mergedNode.Keys[1] = current.Keys[currentIndex];
+                            mergedNode.Keys[2] = next.Keys[0];
+
+                            mergedNode.Children[0] = sibling.Children[0];
+                            mergedNode.Children[1] = sibling.Children[1];
+                            mergedNode.Children[2] = next.Children[0];
+                            mergedNode.Children[3] = next.Children[1];
+                        }
+
+                        Console.WriteLine("New merged node and children: ");
+                        mergedNode.PrintNode();
+                        Console.WriteLine("");
+                        if (mergedNode.Children[0] != null) {
+                            mergedNode.Children[0].PrintNode();
+                            Console.WriteLine("");
+                        } else {
+                            Console.WriteLine("merged node has no children");
+                        }
+                        if (mergedNode.Children[1] != null) {
+                            mergedNode.Children[1].PrintNode();
+                            Console.WriteLine("");
+                        }
+                        if (mergedNode.Children[2] != null) {
+                            mergedNode.Children[2].PrintNode();
+                            Console.WriteLine("");
+                        }
+                        if (mergedNode.Children[3] != null) {
+                            mergedNode.Children[3].PrintNode();
+                            Console.WriteLine("");
+                        }
+
+                        //If the parent only has one key then the entire root node will be merged into the new merged node and the height will decrease by 1
+                        if (parent == null && current.NumKeys == 1) {
+                            current = null;
+                        } 
+                        else {
+                            // Assuming currentIndex is the position of the key to remove.
+                            // Shift keys to the left to fill the gap created by the removed key.
+                            for (int i = currentIndex; i < current.NumKeys - 1; i++) {
+                                current.Keys[i] = current.Keys[i + 1];
+                            }
+                            // If the node is not a leaf, shift the child pointers as well.
+                            if (!current.IsLeaf) {
+                                // Note: There is one more child than there are keys, so loop one extra time.
+                                for (int i = currentIndex + 1; i < current.NumKeys; i++) {
+                                    current.Children[i] = current.Children[i + 1];
+                                }
+                            }
+
+                            // Set the last key and last child (if not a leaf) to default values to clean up references.
+                            current.Keys[current.NumKeys - 1] = default(T);
+                            if (!current.IsLeaf) {
+                                current.Children[current.NumKeys] = null; // Assuming null is appropriate for your child links.
+                            }
+
+                            // Decrease the number of keys in the node.
+                            current.NumKeys--;
+
+                            current.Children[currentIndex] = mergedNode;
+                            Console.WriteLine("New current after shift: ");
+                            current.PrintNode();
+                        } 
+
+                        return (current, mergedNode);
                     }
 
-                    //descend down the tree
-                    //DeletePrivate(k, currentNode.Children[index], currentNode);
+
+                    //Check left adjacent
+                    if (nextIndex > 0) {
+                        //Console.WriteLine("Left adjacent sibling exists");
+                        //check if index - 1 is mergable
+                        if (current.Children[nextIndex - 1].NumKeys == (t - 1)) {
+                            //Console.WriteLine("Left adjacent sibling can merge");
+
+                            //Merge nodes together
+                            (current, mergedNode) = Merge(false, current.Children[nextIndex - 1], nextCurrent, current, parent);
+                        }
+                    }
+                    //Check right adjacent
+                    if (nextIndex < ((2 * t) - 1)) {
+                        //Console.WriteLine("Right adjacent sibling exists");
+                        //check if index + 1 is mergable
+                        if (current.Children[nextIndex + 1].NumKeys == (t - 1)) {
+                            //Console.WriteLine("right adjacent sibling can merge");
+
+                            //Merge nodes together
+                            (current, mergedNode) = Merge(true, current.Children[nextIndex + 1], nextCurrent, current, parent);
+                        }
+                    }
+
+
+                    if (current == null) {
+                        //Root was merged
+                        current = mergedNode;
+                        root = current; //Update Root
+                    }
+
+                    Console.Write("Current after merge: ");
+                    current.PrintNode();
+                    Console.WriteLine("");
+                    PrintByLevels();
+
+                    DeletePrivate(k, current, parent);
                 }
+
+
             }
         } 
         else { 
