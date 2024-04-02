@@ -4,6 +4,7 @@ using System.ComponentModel.Design;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -214,12 +215,164 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
 
 
     //returns true if key k is successfully deleted; false otherwise. (10 marks)
-    bool Delete(T k) {
+    public bool Delete(T k) {
+        bool result;
+        //Check if the key exists
+        if (Search(k) == false) {
+            //key doesn't exist
+            result = false;
+        } else {
+            //Key exists so we can delete it
+            result = DeletePrivate(k, root, null);
+        }
+
+        return result;
+    }
+
+    //Removes an existing key from the B-Tree
+    private bool DeletePrivate(T k, Node<T> currentNode, Node<T> parentNode) {
+        //Returns the index where k is located for the keys[] array of the passed node if a match is found, otherwise -1;
+        int keyAtCurrentNode(T k, Node<T> currentNode) {
+            int index;
+            ////Determine if the key is located at the current node
+            for (int i = 0; i < currentNode.NumKeys; i++) {
+                //Console.Write("\n Comparing " + k + " against " + currentNode.Keys[i]);
+                if (k.CompareTo(currentNode.Keys[i]) == 0) {
+                    //Console.WriteLine("\n" + k + " found at current node at index " + i);
+                    index = i;
+                    return index;
+                }
+                //Console.Write(". no match");
+            }
+            //Did not find k at the current node
+            index = -1;
+            return index;
+        }
+
+
+        Node<T> parent = parentNode;
+        Node<T> current = currentNode;
+
+        //Debugging
+        Console.WriteLine("\nNext deletePrivate() iteration:");
+        Console.Write("Parent: ");
+        if (parent == null) {
+            Console.WriteLine("parent null");
+        } else {
+            parent.PrintNode();
+        }
+        Console.Write("\nCurrent: ");
+        current.PrintNode();
+        Console.WriteLine("");
+
+
+        //Check if the key is at the current node
+        int keyIndex = keyAtCurrentNode(k, current);
+        if (keyIndex == -1) {
+            Console.WriteLine("\n" + k + " not at the current node");
+            //Descend down the tree by looking at k and determining the path to take.
+            void Descend(T k, Node<T> current) {
+                //Determine which path to take
+                int index = determineIndex(k, current);
+
+                //Go down the path
+                //currentNode = currentNode.Children[index];
+                DeletePrivate(k, current.Children[index], current);
+            }
+
+
+            //Determine if the next node we will go down to has enough keys, new current must have AT LEAST t keys
+            int minKeys = t;
+            if (current.NumKeys >= minKeys) {
+                Console.WriteLine("Has enough keys");
+
+                //descend
+                Descend(k, current);
+            } else {
+                Console.WriteLine("Need more keys");
+                //Special case: At the root, root doesn't have to have t keys 
+                if (parent == null) {
+                    Console.WriteLine("at root, descending");
+                    //descend down the tree
+                    Descend(k, current);
+                    //Determine which path to take
+                    //int index = determineIndex(k, currentNode);
+
+                    //Go down the path
+                    //currentNode = currentNode.Children[index];
+                    //DeletePrivate(k, currentNode.Children[index], currentNode);
+
+                } else {
+                    Console.WriteLine("not at root, gather more keys");
+                    // borrows a key from a sibling (if possible) or 
+                    if (1 == 2) {
+
+                    }
+                    //merges with an adjacent (node is just before or after the current node) node where the t-1 keys of each node plus one
+                    //from the parent node yield a single node with 2t - 1 keys. Note: The parent node is guaranteed to have an extra key(Why?)
+                    else {
+                        //Pick a key in current. While looking at parent, ask how I got to current and get the child index (of parent that points to current).
+                        //That will tell us what path we took from the parent to get to current. Then we can use that to determine the
+                        //adjacent nodes that we could merge with
+                        int currentIndex = determineIndex(current.Keys[0], parent);
+                        Console.WriteLine("parent took index " + currentIndex + " to get to current");
+
+
+                        //CHeck left adjacent
+                        //get our current index in the parent
+                        //check index - 1   if valid
+                        if (currentIndex > 0) {
+                            Console.WriteLine("Left adjacent sibling exists");
+                            if (parent.Children[currentIndex - 1].NumKeys == (t - 1)) {
+                                Console.WriteLine("Left adjacent sibling can merge");
+                            }
+                        }
+                        //check index + 1   if valid
+                        //Check right adjacent
+                        if (currentIndex < ((2 * t) - 1)) {
+                            Console.WriteLine("Right adjacent sibling exists");
+                            if (parent.Children[currentIndex + 1].NumKeys == (t - 1)) {
+                                Console.WriteLine("right adjacent sibling can merge");
+                            }
+                        } 
+                    }
+
+                    //descend down the tree
+                    //DeletePrivate(k, currentNode.Children[index], currentNode);
+                }
+            }
+        } 
+        else { 
+            Console.WriteLine("key: \'" + k +"\' at the current node at Keys[" + keyIndex + "]");
+
+            //Check if the key is a leaf node
+            if (current.IsLeaf) {
+                Console.WriteLine("At leaf");
+                //We can simply remove it from keys[]
+                current.Keys[keyIndex] = default(T);
+
+            } else {
+                Console.WriteLine("Not at leaf, time for some recursive stuff");
+                //if the child node q that precedes k has t keys, then recursively delete the 
+                //predecessor k’ of k in the subtree rooted at q and replace k with k’.
+                    
+
+                //if the child node r that succeeds k has t keys, then recursively delete the
+                //successor k’ of k in the subtree rooted at r and replace k with k’.
+                    
+
+                //otherwise, merge q and r with k from the parent to yield a single node s
+                //with 2t - 1 keys.Recursively delete k from the subtree s.
+
+            }
+        }    
+
+        
+
         return false;
     }
 
-
-    //returns true if key k is found; false otherwise(4 marks).
+    //returns true if key k is found; false otherwise(4 marks). DONE
     public bool Search(T k) {
         //Console.WriteLine(root.Keys[0]);
         bool result = SearchPrivate(k, root);
@@ -411,7 +564,17 @@ public class Program {
 
         myBTree.Search('p');    //test non-existing value
 
-        
+        Console.WriteLine("\n-----------------------------------------");
+        Console.WriteLine("Testing delete()");
+        //myBTree.Delete('d');
+        //myBTree.Delete('d');
+        //myBTree.Delete('b');
+        myBTree.Delete('a');
+
+        Console.WriteLine("\nAfter delete()");
+        myBTree.PrintByLevels();
+        myBTree.Print();
+
     }
 }
 
