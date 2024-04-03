@@ -570,6 +570,8 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
         } 
         else { 
             Console.WriteLine("key: \'" + k +"\' at the current node at Keys[" + keyIndex + "]");
+            Console.WriteLine("");
+            PrintByLevels();
 
             //Check if the key is a leaf node
             if (current.IsLeaf) {
@@ -582,19 +584,76 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
 
             } else {
                 Console.WriteLine("Not at leaf, time for some recursive stuff");
+                //Console.WriteLine("Before removing the node: ");
+                //PrintByLevels();
                 //if the child node q that precedes k has t keys, then recursively delete the 
                 //predecessor k’ of k in the subtree rooted at q and replace k with k’.
+                if (current.Children[keyIndex].NumKeys >= t) {
+                    Console.WriteLine("get Predesessor");
+                    //get a copy of the predesessor key from the left child
+                    T getPredecessor(Node<T> node, int keyIndex) {
+                        Node<T> current = node.Children[keyIndex];
+                        while (!current.IsLeaf) {
+                            current = current.Children[current.NumKeys];
+                        }
+                        return current.Keys[current.NumKeys - 1];
+                    }
+
+                    T predecessorKey = getPredecessor(current, keyIndex);
+                    Console.WriteLine(predecessorKey);
+
+                    //Go down the tree from left child q, deleting right most predessesor 
+                    void deletePredecessor() {
+                        DeletePrivate(predecessorKey, current, parent);
+                    }
+
+                    deletePredecessor();
+
+                    //move up the predessesor to replace the deleted value 
+                    current.Keys[keyIndex] = predecessorKey;
+
+                }
 
 
-                //if the child node r that succeeds k has t keys, then recursively delete the
+
+
+
+                //else if the child node r that succeeds k has t keys, then recursively delete the
                 //successor k’ of k in the subtree rooted at r and replace k with k’.
+                else if (current.Children[keyIndex + 1].NumKeys >= t) {
+                    //get a copy of the successor key
+                    T getSuccessor() {
+                        T key = current.Children[keyIndex + 1].Keys[0];
+
+                        return key;
+                    }
+
+                    //Go down the tree from left child q, deleting right most successor
+
+                    //move up the successor to replace the deleted value 
+                }
 
 
-                //otherwise, merge q and r with k from the parent to yield a single node s
+
+
+
+                //else otherwise, merge q and r with k from the parent to yield a single node s
                 //with 2t - 1 keys.Recursively delete k from the subtree s.
+                //Both children only have t - 1 keys available
+                else {
+                    //move down the key we are trying to delete into the left child  3:30 video
+
+                    //merge the nodes, move the right childs keys and children in to the left child node
+
+                    //after merging we can delete it becasue it's now at a leaf node
+                }
 
 
-                Console.ReadLine();
+
+
+                //Console.WriteLine("After removing the node: ");
+                //PrintByLevels();
+                //Console.ReadLine();
             }
         }    
 
@@ -872,9 +931,12 @@ public class Program {
         myBTree.Insert('v');
         myBTree.PrintByLevels();
 
-        Console.WriteLine("\nDelete internal(d)"); //test leaf delete with internal node
+
+        Console.WriteLine("\nDelete internal node (d)"); //test leaf delete with internal node
+
         myBTree.Delete('d');
-        Console.WriteLine();
+
+        Console.WriteLine("After deletion");
         myBTree.PrintByLevels();
         myBTree.Print();
 
