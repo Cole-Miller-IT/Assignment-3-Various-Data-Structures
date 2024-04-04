@@ -273,6 +273,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
         Node<T> current = currentNode;
 
         //Debugging
+        /*
         Console.WriteLine("\nNext deletePrivate() iteration:");
         Console.Write("Parent: ");
         if (parent == null) {
@@ -282,13 +283,13 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
         }
         Console.Write("\nCurrent: ");
         current.PrintNode();
-        Console.WriteLine("");
+        Console.WriteLine("");*/
 
 
         //Check if the key is at the current node
         int keyIndex = keyAtCurrentNode(k, current);
         if (keyIndex == -1) {
-            Console.WriteLine("\n" + k + " not at the current node");
+            //Console.WriteLine("\n" + k + " not at the current node");
 
             //Determine if the next node we will go down to has enough keys, new current must have AT LEAST t keys
             int nextIndex = determineIndex(k, current);
@@ -382,6 +383,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                             leftSibling.Children[leftSibling.NumKeys - 1] = null;
                             leftSibling.NumKeys--;
                         }
+                        
                         // Check right adjacent sibling
                         else if (nextIndex < parent.NumKeys && parent.Children[nextIndex + 1].NumKeys >= t) {
                             //Console.WriteLine("right borrow");
@@ -403,8 +405,16 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                             current.Children[current.NumKeys] = borrowedChild;
 
                             //Delete the borrowed key and subtree from next + 1
-                            rightSibling.Children[0] = null;
+                            rightSibling.Children[0] = rightSibling.Children[1]; //Not set to null b/c it messes up shiftKeys() thinking it's a leaf.
+
+                            //Console.WriteLine(rightSibling.NumKeys);
                             shiftKeys(rightSibling, 0);
+
+                            /*Console.WriteLine("Right sib");
+                            Console.WriteLine(rightSibling.NumKeys);
+                            rightSibling.PrintNode();
+                            Console.WriteLine("");
+                            Print();*/
                         }
                     }
 
@@ -419,6 +429,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                     //current.PrintNode();
                     //Console.WriteLine("");
                     //PrintByLevels();
+                    //Print();
                     //Console.ReadLine();
 
                     //Descend
@@ -569,9 +580,9 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
             }
         } 
         else { 
-            Console.WriteLine("key: \'" + k +"\' at the current node at Keys[" + keyIndex + "]");
-            Console.WriteLine("");
-            PrintByLevels();
+            //Console.WriteLine("key: \'" + k +"\' at the current node at Keys[" + keyIndex + "]");
+            //Console.WriteLine("");
+            //PrintByLevels();
 
             //Check if the key is a leaf node
             if (current.IsLeaf) {
@@ -583,13 +594,13 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                 shiftKeys(current, keyIndex);
 
             } else {
-                Console.WriteLine("Not at leaf, time for some recursive stuff");
+                //Console.WriteLine("Not at leaf, time for some recursive stuff");
                 //Console.WriteLine("Before removing the node: ");
                 //PrintByLevels();
                 //if the child node q that precedes k has t keys, then recursively delete the 
                 //predecessor k’ of k in the subtree rooted at q and replace k with k’.
                 if (current.Children[keyIndex].NumKeys >= t) {
-                    Console.WriteLine("get Predesessor");
+                    //Console.WriteLine("get Predesessor");
                     //get a copy of the predesessor key from the left child
                     T getPredecessor(Node<T> node, int keyIndex) {
                         Node<T> current = node.Children[keyIndex];
@@ -600,7 +611,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                     }
 
                     T predecessorKey = getPredecessor(current, keyIndex);
-                    Console.WriteLine(predecessorKey);
+                    //Console.WriteLine(predecessorKey);
 
                     //Go down the tree from left child q, deleting right most predessesor 
                     void deletePredecessor() {
@@ -615,49 +626,76 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                 }
 
 
-
-
-
                 //else if the child node r that succeeds k has t keys, then recursively delete the
                 //successor k’ of k in the subtree rooted at r and replace k with k’.
                 else if (current.Children[keyIndex + 1].NumKeys >= t) {
+                    //Console.WriteLine("get successor");
                     //get a copy of the successor key
-                    T getSuccessor() {
-                        T key = current.Children[keyIndex + 1].Keys[0];
-
-                        return key;
+                    T getSuccessor(Node<T> node, int keyIndex) {
+                        Node<T> current = node.Children[keyIndex + 1];
+                        while (!current.IsLeaf) {
+                            current = current.Children[0];
+                        }
+                        return current.Keys[0];
                     }
 
+
+                    T successorKey = getSuccessor(current, keyIndex);
+                    //Console.WriteLine("Successor key is: " + successorKey);
+
                     //Go down the tree from left child q, deleting right most successor
+                    void deleteSuccessor() {
+                        DeletePrivate(successorKey, current, parent);
+                    }
+
+
+                    deleteSuccessor();
 
                     //move up the successor to replace the deleted value 
+                    current.Keys[keyIndex] = successorKey;
                 }
-
-
-
 
 
                 //else otherwise, merge q and r with k from the parent to yield a single node s
-                //with 2t - 1 keys.Recursively delete k from the subtree s.
-                //Both children only have t - 1 keys available
+                //with 2t - 1 keys. Recursively delete k from the subtree s.
+                //Both children only have t - 1 keys available          //Note: only works for 2,3,4-tree
                 else {
-                    //move down the key we are trying to delete into the left child  3:30 video
+                    //Console.WriteLine("else, merge child nodes and current k");
+                    //current.PrintNode();
+                    //Console.WriteLine();
 
-                    //merge the nodes, move the right childs keys and children in to the left child node
+                    //move down the key we are trying to delete into the left child  3:30 video https://www.youtube.com/watch?v=pN4C8cLVc7I
+                    Node<T> leftChild = current.Children[keyIndex];
+                    Node<T> rightChild = current.Children[keyIndex + 1];
 
-                    //after merging we can delete it becasue it's now at a leaf node
+                    //leftChild.PrintNode();
+                    //Console.WriteLine();
+                    //rightChild.PrintNode();
+
+                    leftChild.Keys[t - 1] = k;
+                    leftChild.NumKeys++;
+
+
+
+                    //move the right childs keys and children in to the left child node
+                    leftChild.Keys[t] = rightChild.Keys[0];
+                    leftChild.NumKeys++;
+                    leftChild.Children[t] = rightChild.Children[0];
+                    leftChild.Children[(2 * t) - 1] = rightChild.Children[1];
+
+                    //Remove the right child
+                    current.Children[keyIndex + 1] = null;
+
+                    //remove k from current and shift the keys and children in current
+                    //determine where k removed was 
+                    shiftKeys(current, keyIndex);
+
+
+                    //after merging, we can delete k recursively from the left child
+                    DeletePrivate(k, leftChild, current);
                 }
-
-
-
-
-                //Console.WriteLine("After removing the node: ");
-                //PrintByLevels();
-                //Console.ReadLine();
             }
         }    
-
-        
 
         return false;
     }
@@ -675,6 +713,8 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
             for (int i = index + 1; i < node.NumKeys; i++) {
                 node.Children[i] = node.Children[i + 1];
             }
+        } else {
+            //Console.WriteLine("think leaf");
         }
 
         // Set the last key and last child (if not a leaf) to default values to clean up references.
@@ -884,62 +924,109 @@ public class Program {
         Console.WriteLine("Testing delete merge()");
         myBTree.Delete('a'); //test leaf delete with merging
 
-        Console.WriteLine("\nAfter delete()");
-        myBTree.PrintByLevels();
-        myBTree.Print();
+        //Console.WriteLine("\nAfter delete()");
+        //myBTree.PrintByLevels();
+        //myBTree.Print();
 
         myBTree.Delete('b'); //test leaf delete with merging
-        myBTree.PrintByLevels();
-        myBTree.Print();
+        //myBTree.PrintByLevels();
+        //myBTree.Print();
 
 
-        Console.WriteLine("\nDelete right borrow(c)"); //test leaf delete with right borrowing
+        //Console.WriteLine("\nDelete right borrow(c)"); //test leaf delete with right borrowing
         myBTree.Delete('c');
-        myBTree.PrintByLevels();
-        myBTree.Print();
+        ///myBTree.PrintByLevels();
+        //myBTree.Print();
 
-        Console.WriteLine("\nDelete left borrow(f)"); //test leaf delete with left borrowing
+        //Console.WriteLine("\nDelete left borrow(f)"); //test leaf delete with left borrowing
         myBTree.Insert('a');
         myBTree.Delete('f');
-        myBTree.PrintByLevels();
-        myBTree.Print();
+        //myBTree.PrintByLevels();
+        //myBTree.Print();
 
 
         
         myBTree.Insert('b');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('c');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('f');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('g');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('h');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('j');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('q');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('r');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('s');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('t');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('u');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
         myBTree.Insert('v');
-        myBTree.PrintByLevels();
+        //myBTree.PrintByLevels();
 
 
-        Console.WriteLine("\nDelete internal node (d)"); //test leaf delete with internal node
+        //Console.WriteLine("\nDelete internal node (d)"); //test leaf delete with internal node predessesor
 
         myBTree.Delete('d');
 
-        Console.WriteLine("After deletion");
-        myBTree.PrintByLevels();
-        myBTree.Print();
+        //Console.WriteLine("After deletion");
+        //myBTree.PrintByLevels();
+        //myBTree.Print();
 
+
+        //Console.WriteLine("\n------------------------------------------");
+        //Console.WriteLine("\nDelete internal node (q)"); 
+        myBTree.Delete('q');    //test leaf delete with internal node at root predessesor
+
+        //Console.WriteLine("After deletion"); 
+        //myBTree.PrintByLevels();
+        //myBTree.Print();
+
+
+        Console.WriteLine("\n------------------------------------------");
+        Console.WriteLine("\nDelete internal node successor");
+        TwoThreeFourTree<int> myBTree2 = new TwoThreeFourTree<int>();
+        myBTree2.Insert(50);
+        myBTree2.Insert(40);
+        //myBTree2.Insert(30);
+        //myBTree2.Insert(20);
+        myBTree2.Insert(10);
+        myBTree2.Insert(60);
+        myBTree2.Insert(70);
+        myBTree2.Insert(71);
+        myBTree2.Insert(72);
+        myBTree2.Insert(73);
+        myBTree2.Insert(74);
+        myBTree2.Insert(80);
+        myBTree2.Insert(90);
+        myBTree2.Insert(100);
+        myBTree2.PrintByLevels();
+        myBTree2.Print();
+
+        myBTree2.Delete(60);    //test delete with internal node, successor
+
+        Console.WriteLine("After deletion");
+        myBTree2.PrintByLevels();
+        myBTree2.Print();
+
+        Console.WriteLine("\n------------------------------------------");
+        Console.WriteLine("\nDelete internal node merge");
+        Console.WriteLine("before deletion");
+        myBTree2.PrintByLevels();
+        myBTree2.Print();
+
+        myBTree2.Delete(40);    //test delete with internal node, merge
+
+        Console.WriteLine("After deletion");
+        myBTree2.PrintByLevels();
+        myBTree2.Print();
     }
 }
 
