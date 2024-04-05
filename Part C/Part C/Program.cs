@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
+using BSTforRBTree;
 
 
 class TwoThreeFourTree<T> where T : IComparable<T> {
@@ -73,7 +74,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
     //Returns true if key k is successfully inserted; false otherwise. (6 marks)
     public bool Insert(T k) {
         bool result = true;
-        Console.WriteLine("\n-------------------------------------------\nKey to insert: " + k);
+        //Console.WriteLine("\n-------------------------------------------\nKey to insert: " + k);
         //First item in the tree
         if (root == null) {
             root = new Node<T>();
@@ -82,7 +83,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
         } else { //not the first item in the tree
             if (Search(k)) {
                 //No duplicates
-                Console.WriteLine("No duplicates allowed.");
+                //Console.WriteLine("No duplicates allowed.");
                 return false;
             }
 
@@ -91,11 +92,11 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
 
             //Loop until the node is inserted or a duplicate is found
             while (currentNode != null) {
-                Console.WriteLine("Currently at node: ");
+                //Console.WriteLine("Currently at node: ");
                 currentNode.PrintNode();
                 //Console.ReadLine();
                 if (currentNode.NumKeys == 3) {
-                    Console.WriteLine("\nSPlit node");
+                    //Console.WriteLine("\nSPlit node");
                     //Need to split a 3 node
                     SplitNode(parentNode, currentNode);
 
@@ -110,13 +111,13 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                     currentNode = moveDown(k, currentNode);                    
                 } else {
                     if (currentNode.IsLeaf) {
-                        Console.WriteLine("insert into non full node");
+                        //Console.WriteLine("insert into non full node");
                         InsertNonFullNode(currentNode, k);
                     }
 
                     parentNode = currentNode;
                     // Move down the tree
-                    Console.WriteLine("move down tree");
+                    //Console.WriteLine("move down tree");
                     //currentNode = GetNextChild(currentNode, k); //
                     currentNode = moveDown(k, currentNode);
                 }
@@ -205,6 +206,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
 
 
     //Insert a node into the tree at a node that is not full (doesn't already have 3 keys in it)
+    //Chat GPT help me with this
     private void InsertNonFullNode(Node<T> node, T item) {
         int i = node.NumKeys - 1;
         if (node.IsLeaf) {
@@ -405,7 +407,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
                             current.Children[current.NumKeys] = borrowedChild;
 
                             //Delete the borrowed key and subtree from next + 1
-                            rightSibling.Children[0] = rightSibling.Children[1]; //Not set to null b/c it messes up shiftKeys() thinking it's a leaf.
+                            rightSibling.Children[0] = rightSibling.Children[1]; //Don't set to null b/c it messes up shiftKeys(), thinking it's a leaf.
 
                             //Console.WriteLine(rightSibling.NumKeys);
                             shiftKeys(rightSibling, 0);
@@ -805,12 +807,90 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
     }
 
 
-    //which builds and returns the equivalent red-black tree. For this assignment, the red-black tree is represented as an instance of the class BSTforRBTree. The code for
+    //which builds and returns the equivalent red-black tree. For this assignment, the red-black tree is represented as an instance of the class BSTforRBTree. The code for
     //BSTforRBTree is found on Blackboard under Assignments. Remember to remove the class Program
-    //before using in your code. (8 marks)
-    //public BSTforRBTree<T> Convert() { 
-    //
-    //} 
+    //before using in your code. (8 marks) <-- this should not be worth close to the same as the delete() method, this was much easier
+    //https://stackoverflow.com/questions/35955246/converting-a-2-3-4-tree-into-a-red-black-tree
+    //https://pontus.digipen.edu/~mmead/www/Courses/CS280/Trees-Mapping2-3-4IntoRB.html
+    public BSTforRBTree<T> Convert() {
+        //Create a new RBTree
+        BSTforRBTree<T> myRedBlackTree = new BSTforRBTree<T>();
+
+        ConvertPrivate(root, myRedBlackTree);
+
+        return myRedBlackTree;
+    }
+
+    BSTforRBTree<T> ConvertPrivate(Node<T> node, BSTforRBTree<T> rBTree) {
+        Node<T> current = node;
+        //current.PrintNode();
+        //Console.WriteLine("");
+
+        if (current.NumKeys == 1) {
+            //Console.WriteLine("2 node");
+            //           Black          Implementated as this
+            //           /   \
+            //          /     \
+            //         1       2
+
+            rBTree.Add(current.Keys[0], BSTforRBTree.Color.BLACK);
+
+            if (current.IsLeaf) {
+                //
+
+            } else {
+                ConvertPrivate(current.Children[0], rBTree);    //Go down the left path
+                ConvertPrivate(current.Children[1], rBTree);    //Go down the right path
+            }
+
+        } else if (current.NumKeys == 2) {
+            //Console.WriteLine("3 node");
+            //           Black          Implementated as this
+            //           /   \
+            //          /     \
+            //        Red      3
+            //       /  \
+            //      1    2
+            //
+
+            rBTree.Add(current.Keys[1], BSTforRBTree.Color.BLACK);
+            rBTree.Add(current.Keys[0], BSTforRBTree.Color.RED);
+
+            if (current.IsLeaf) {
+                //
+
+            } else {
+                ConvertPrivate(current.Children[0], rBTree);    //Go down the left most path
+                ConvertPrivate(current.Children[1], rBTree);    //
+                ConvertPrivate(current.Children[2], rBTree);    //
+            }
+        } else {
+            //Console.WriteLine("4 node");
+            //           Black          
+            //           /   \
+            //          /     \
+            //        Red     Red
+            //       /  \     /  \
+            //      1    2   3    4
+            //
+
+            rBTree.Add(current.Keys[1], BSTforRBTree.Color.BLACK);
+            rBTree.Add(current.Keys[0], BSTforRBTree.Color.RED);
+            rBTree.Add(current.Keys[2], BSTforRBTree.Color.RED);
+
+            if (current.IsLeaf) {
+                //
+
+            } else {
+                ConvertPrivate(current.Children[0], rBTree);    //Go down the left most path
+                ConvertPrivate(current.Children[1], rBTree);    //
+                ConvertPrivate(current.Children[2], rBTree);    //
+                ConvertPrivate(current.Children[3], rBTree);    //
+            }
+        }
+
+        return rBTree;
+    }
 
     //which prints out the keys of the 2-3-4 tree in order. (4 marks)
     // Print method that initiates the in-order traversal from the root
@@ -836,6 +916,7 @@ class TwoThreeFourTree<T> where T : IComparable<T> {
     }
 
     // Method to print the tree by levels using breadth first search
+    // Had Chat GPT make this
     public void PrintByLevels() {
         if (root == null) {
             Console.WriteLine("The tree is empty.");
@@ -1027,6 +1108,23 @@ public class Program {
         Console.WriteLine("After deletion");
         myBTree2.PrintByLevels();
         myBTree2.Print();
+
+
+        Console.WriteLine("\n------------------------------------------");
+        Console.WriteLine("Test conversion to red black tree");
+        myBTree2.Insert(11);
+        myBTree2.Insert(15);
+        myBTree2.Insert(19);
+        myBTree2.Insert(24);
+        myBTree2.Insert(30);
+
+        myBTree2.PrintByLevels();
+        myBTree2.Print();
+
+        myBTree2.Convert().Print();
+
+
+
     }
 }
 

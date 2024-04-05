@@ -17,12 +17,11 @@ namespace BSTforRBTree
 
     // Implementation:  BSTforRBTree
 
-    class BSTforRBTree<T> : ISearchable<T> where T : IComparable
-    {
+    class BSTforRBTree<T> : ISearchable<T> where T : IComparable<T> {
 
         // Common generic node class for a BSTforRBTree
 
-        private class Node
+        public class Node //Changed to public for Convert()
         {
             // Read/write properties
 
@@ -118,7 +117,7 @@ namespace BSTforRBTree
 
     //-----------------------------------------------------------------------------
 
-    public class Program
+    /*public class Program
     {
         static void Main(string[] args)
         {
@@ -135,5 +134,5 @@ namespace BSTforRBTree
 
             Console.ReadLine();
         }
-    }
+    }*/
 }
